@@ -1,0 +1,24 @@
+---
+title: "Codebook"
+author: "Sohail Munir Khan"
+date: "21 June 2015"
+output: html_document
+---
+
+This file describes the variables, the data, and any transformations or work that I performed for **Getting &amp; Cleaning Data - Course Project**
+* The site where the data was obtained:  
+http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones      
+The data for the project:  
+https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip  
+* The run_analysis.R script performs the following steps to clean the data:   
+ 1. If required, it creates 'data/' directory and then either download and / or unzips the file required for our analysis. Prints date if ZIP was downloaded
+ 2. Recursively looks at both 'data/test/' and 'data/train/' folder structure and while confirming that both folder structures have same files (discounting for substring 'test' or 'train'), it starts merging data files. A new data environment is created to store all relevant data per stage of our transformation. In this step, we will have the following environment variables: *body_acc_x_MERGED*, *body_acc_y_MERGED*, *body_acc_z_MERGED*, *body_gyro_x_MERGED*, *body_gyro_y_MERGED*, *body_gyro_z_MERGED*, *total_acc_x_MERGED*, *total_acc_y_MERGED*, *total_acc_z_MERGED*, *subject_MERGED*, *X_MERGED*, *y_MERGED*, *activityLabelsRAW*, *featuresRAW*. Important dimensions for *X_MERGED*: 10299x561, *subject_MERGED*: 10299x1, *y_MERGED*: 10299x1, *activityLabelsRAW*: 6x2, *featuresRAW*: 561x2
+ 3. Drop first columns for *activityLabelsRAW* and *featuresRAW* as they are reduntant (rownames are sufficient)
+ 4. *features* now contains only the 2nd column from *featuresRAW* variable. A new *relevantFeatures* variable now holds logical array that provides information on whether **mean** or **std** is substring contained in *features* object
+ 5. *allRelevantXData* is created by subsetting only the *features* variables from *X* (read from *X_MERGED*). *allRelevantData* is created by contatenating *allRelevantXData* (note X), *subject*  (from *subject_MERGED*), *y* (from *y_MERGED*)
+ 6. *featuresUsed* created from logical array *relevantFeatures* (selecting only columns that we require). Then using regex helper function gsub, we remove "-", "(", ")" from *featuresUsed*. Then column names where substing is "mean" is swapped with "Mean" and "std" with "Std" for better naming Structure. This variable is stored for the time-being into the dataEnvironment (We created for the storage of our data environment)
+ 7. *activityLabels* now contains only 2nd column from *activityLabelsRAW* variable
+ 8. Using *allRelevantData* and *activityLabels*, we create *dataWithActivityLabels* that names the y (activity) variable with information on whether it's WALKING, WALKING_UPSTAIRS, WALKING_DOWNSTAIRS, SITTING, STANDING or LAYING
+ 9. Creating *fullData* now by naming the *dataWithActivityLabels* dataframe with column names from *featuresUsed* variable. The two dataframe variables are Subject and Activity (y) respectively. We now have a full dataframe that holds all information that we would need
+ 10. Using *dplyr* library, we group the Subject and Activity columns of our *fullData* dataframe. We also arrange the summarised data (we used summarise_each from dplyr) by Subject and alphabetically (as.character) on the Activity variable
+ 11. We write the resulting *tideDataset* to our file "tidyDataset.txt" that is uploaded into Coursera
